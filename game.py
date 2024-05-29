@@ -40,7 +40,7 @@ class Level:
         possible_words = ["PYTHON", "JAVA", "RUBY", "JAVASCRIPT", "SWIFT", "C", "C++", "HTML", "CSS", "PHP", "PYTHONIC", "JAVAEE", "SQL"]
 
         # Randomly select words based on level
-        num_words = min(5 + self.level_number, len(possible_words))  
+        num_words = min(5 + self.level_number, len(possible_words))
         words = random.sample(possible_words, num_words)
         return words
 
@@ -49,7 +49,7 @@ class Grid:
         self.canvas = canvas
         self.level = level
         self.size = self.level.grid_size
-        self.grid = self.create_grid()  
+        self.grid = self.create_grid()
         self.selected_letters = []
         self.selected_positions = []
 
@@ -62,14 +62,14 @@ class Grid:
                 if direction == 'horizontal':
                     row = random.randint(0, self.size - 1)
                     col = random.randint(0, max(0, self.size - len(word)))  # Ensure non-negative range
-                    if all(grid[row][col + i] in ('', letter) for i, letter in enumerate(word)):
+                    if all(grid[row][col + i] == '' or grid[row][col + i] == letter for i, letter in enumerate(word)):
                         for i, letter in enumerate(word):
                             grid[row][col + i] = letter
                         placed = True
                 else:
                     row = random.randint(0, max(0, self.size - len(word)))  # Ensure non-negative range
                     col = random.randint(0, self.size - 1)
-                    if all(grid[row + i][col] in ('', letter) for i, letter in enumerate(word)):
+                    if all(grid[row + i][col] == '' or grid[row + i][col] == letter for i, letter in enumerate(word)):
                         for i, letter in enumerate(word):
                             grid[row + i][col] = letter
                         placed = True
@@ -116,7 +116,7 @@ class GameWindow:
         self.end_game_callback = end_game_callback
         self.canvas = tk.Canvas(self.root, width=800, height=600)  # Fixed dimensions
         self.background_image = Image.open("background.jpg")
-        self.background_photo = ImageTk.PhotoImage(self.background_image.resize((500, 300)))  
+        self.background_photo = ImageTk.PhotoImage(self.background_image.resize((500, 300)))
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.background_photo)
         self.grid = Grid(self.canvas, self.level)
         self.word_list = WordList(self.canvas, self.level)
@@ -146,7 +146,6 @@ class GameWindow:
 
     def hide(self):
         self.canvas.pack_forget()
-
 
 class StartScreen:
     def __init__(self, root, start_game_callback):
