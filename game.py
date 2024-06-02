@@ -32,14 +32,11 @@ class Game:
 class Level:
     def __init__(self, level_number):
         self.level_number = level_number
-        self.grid_size = 5 + level_number  # Increase grid size with level
         self.words = self.generate_words()
+        self.grid_size = max(5 + level_number, max(len(word) for word in self.words))
 
     def generate_words(self):
-        # List of possible words
         possible_words = ["PYTHON", "JAVA", "RUBY", "JAVASCRIPT", "SWIFT", "C", "C++", "HTML", "CSS", "PHP", "PYTHONIC", "JAVAEE", "SQL"]
-
-        # Randomly select words based on level
         num_words = min(5 + self.level_number, len(possible_words))
         words = random.sample(possible_words, num_words)
         return words
@@ -60,16 +57,20 @@ class Grid:
             while not placed:
                 direction = random.choice(['horizontal', 'vertical'])
                 if direction == 'horizontal':
+                    if self.size < len(word):
+                        raise ValueError("Grid size is too small for the word")
                     row = random.randint(0, self.size - 1)
-                    col = random.randint(0, max(0, self.size - len(word)))  # Ensure non-negative range
-                    if all(grid[row][col + i] == '' or grid[row][col + i] == letter for i, letter in enumerate(word)):
+                    col = random.randint(0, self.size - len(word))
+                    if all(grid[row][col + i] in ('', letter) for i, letter in enumerate(word)):
                         for i, letter in enumerate(word):
                             grid[row][col + i] = letter
                         placed = True
                 else:
-                    row = random.randint(0, max(0, self.size - len(word)))  # Ensure non-negative range
+                    if self.size < len(word):
+                        raise ValueError("Grid size is too small for the word")
+                    row = random.randint(0, self.size - len(word))
                     col = random.randint(0, self.size - 1)
-                    if all(grid[row + i][col] == '' or grid[row + i][col] == letter for i, letter in enumerate(word)):
+                    if all(grid[row + i][col] in ('', letter) for i, letter in enumerate(word)):
                         for i, letter in enumerate(word):
                             grid[row + i][col] = letter
                         placed = True
@@ -78,6 +79,7 @@ class Grid:
                 if grid[i][j] == '':
                     grid[i][j] = random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
         return grid
+
 
     def display(self):
         for i, row in enumerate(self.grid):
@@ -107,16 +109,16 @@ class WordList:
     def mark_word_found(self, word):
         if word in self.words and word not in self.found_words:
             self.found_words.append(word)
-            self.canvas.itemconfig(word, fill='yellow') 
+            self.canvas.itemconfig(word, fill='yellow')
 
 class GameWindow:
     def __init__(self, root, level, end_game_callback, score):
         self.root = root
         self.level = Level(level)
         self.end_game_callback = end_game_callback
-        self.canvas = tk.Canvas(self.root, width=800, height=600)  # Fixed dimensions
+        self.canvas = tk.Canvas(self.root, width=800, height=600)
         self.background_image = Image.open("background.jpg")
-        self.background_photo = ImageTk.PhotoImage(self.background_image.resize((500, 300)))
+        self.background_photo = ImageTk.PhotoImage(self.background_image.resize((800, 600)))  
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.background_photo)
         self.grid = Grid(self.canvas, self.level)
         self.word_list = WordList(self.canvas, self.level)
@@ -146,6 +148,7 @@ class GameWindow:
 
     def hide(self):
         self.canvas.pack_forget()
+
 
 class StartScreen:
     def __init__(self, root, start_game_callback):
